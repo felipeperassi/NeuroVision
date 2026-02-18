@@ -4,20 +4,20 @@ from torch.utils.data import Dataset
 import torch.nn.functional as F
 
 # Dataset
-class Roi2ClipDataset(Dataset):
-    def __init__(self, voxel_data, clip_data):
-        self.voxels = torch.tensor(voxel_data, dtype=torch.float32)
-        raw_clip = torch.tensor(clip_data, dtype=torch.float32)
-        self.clip = F.normalize(raw_clip, p=2, dim=-1)
+class Voxels2ClipDataset(Dataset):
+    def __init__(self, input_data, output_data):
+        self.input = torch.tensor(input_data, dtype=torch.float32)
+        raw_output = torch.tensor(output_data, dtype=torch.float32)
+        self.output = F.normalize(raw_output, p=2, dim=-1)
 
     def __len__(self):
-        return len(self.voxels)
+        return len(self.input)
 
     def __getitem__(self, idx):
-        return self.voxels[idx], self.clip[idx]
+        return self.input[idx], self.output[idx]
 
 # MLP Model
-class Roi2ClipMLP(nn.Module):
+class Voxels2ClipMLP(nn.Module):
     def __init__(self, input_dim=4657, output_dim=768):
         super().__init__()
 

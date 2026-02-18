@@ -5,16 +5,16 @@ import torch.nn.functional as F
 
 # Dataset
 class Clip2TxtDataset(Dataset):
-    def __init__(self, x_data, y_data):
-        self.x = torch.tensor(x_data, dtype=torch.float32)
-        raw_y = torch.tensor(y_data, dtype=torch.float32)
-        self.y = F.normalize(raw_y, p=2, dim=-1)
+    def __init__(self, input_data, output_data):
+        self.input = torch.tensor(input_data, dtype=torch.float32)
+        raw_output = torch.tensor(output_data, dtype=torch.float32)
+        self.output = F.normalize(raw_output, p=2, dim=-1)
 
     def __len__(self):
-        return len(self.x)
+        return len(self.input)
 
     def __getitem__(self, idx):
-        return self.x[idx], self.y[idx]
+        return self.input[idx], self.output[idx]
 
 # MLP Model
 class Clip2TxtMLP(nn.Module):
@@ -39,5 +39,5 @@ class Clip2TxtMLP(nn.Module):
 
     def forward(self, x):
         x = self.model(x)
-        x = x.view(-1, self.seq_len, self.embed_dim) # [Batch, 77, 768]
+        x = x.view(-1, self.seq_len, self.embed_dim) # trials -> 77x768
         return F.normalize(x, p=2, dim=-1)

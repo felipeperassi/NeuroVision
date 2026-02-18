@@ -4,20 +4,20 @@ from torch.utils.data import Dataset
 import torch.nn.functional as F
 
 # Dataset 
-class Roi2VaeDataset(Dataset):
-    def __init__(self, voxel_data, vae_data):
-        self.voxels = torch.tensor(voxel_data, dtype=torch.float32)
+class Voxels2VaeDataset(Dataset):
+    def __init__(self, input_data, output_data):
+        self.input = torch.tensor(input_data, dtype=torch.float32)
 
-        if len(vae_data.shape) == 2:
-            self.vae = torch.tensor(vae_data, dtype=torch.float32).view(-1, 4, 64, 64)
+        if len(output_data.shape) == 2:
+            self.output = torch.tensor(output_data, dtype=torch.float32).view(-1, 4, 64, 64)
         else:
-            self.vae = torch.tensor(vae_data, dtype=torch.float32)
+            self.output = torch.tensor(output_data, dtype=torch.float32)
 
     def __len__(self):
-        return len(self.voxels)
+        return len(self.input)
 
     def __getitem__(self, idx):
-        return self.voxels[idx], self.vae[idx]
+        return self.input[idx], self.output[idx]
 
 # Residual Block: Memory-efficient deep CNNs
 class ResidualBlock(nn.Module):
@@ -35,7 +35,7 @@ class ResidualBlock(nn.Module):
         return F.gelu(x + self.block(x))
 
 # CNN Model
-class Roi2VaeCNN(nn.Module):
+class Voxels2VaeCNN(nn.Module):
     def __init__(self, voxel_dim=4657):
         super().__init__()
         

@@ -3,19 +3,19 @@ import torch.nn as nn
 from torch.utils.data import Dataset
 
 # Dataset 
-class Roi2LatDataset(Dataset):
-    def __init__(self, roi_data, target_data):
-        self.roi = torch.tensor(roi_data, dtype=torch.float32)
-        self.target = torch.tensor(target_data, dtype=torch.float32)
+class Voxels2LatDataset(Dataset):
+    def __init__(self, input_data, output_data):
+        self.input = torch.tensor(input_data, dtype=torch.float32)
+        self.output = torch.tensor(output_data, dtype=torch.float32)
 
     def __len__(self):
-        return len(self.roi)
+        return len(self.input)
 
     def __getitem__(self, idx):
-        return self.roi[idx], self.target[idx]
+        return self.input[idx], self.output[idx]
 
 # AE Model
-class Roi2LatAutoencoder(nn.Module):
+class Voxels2LatAutoencoder(nn.Module):
     def __init__(self, input_dim=4657, latent_dim=1024):
         super().__init__()
 
