@@ -92,7 +92,7 @@ def main():
         # Save best model
         if avg_test_loss < best_test_loss:
             best_test_loss = avg_test_loss
-            save_path = WEIGHTS_DIR / 'Best_CNN_VAE.pth'
+            save_path = WEIGHTS_DIR / 'Ws_Best_CNN_Vae.pth'
             torch.save(model.state_dict(), save_path)
             print(f"Saved model: {save_path.name}")
 
