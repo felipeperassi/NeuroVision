@@ -5,18 +5,19 @@ import torch
 BASE_DIR = Path(__file__).resolve().parent
 
 DATA_DIR = BASE_DIR / 'data'
-WEIGHTS_DIR = BASE_DIR / 'weights'
-# RESULTS_DIR = BASE_DIR / 'results'
-MODELS_DIR = BASE_DIR / 'models'
-
 DATA_CLIP = DATA_DIR / 'Y_clip.npy'
 DATA_TXT = DATA_DIR / 'Y_txt.npy'
 DATA_VAE = DATA_DIR / 'Y_vae.npy'
 DATA_VOXELS = DATA_DIR / 'X_voxs_subj01.npy'
 
-# MLP_WEIGHTS = WEIGHTS_DIR / 'Latent2CLIP_Ws.pth'
-# MAPPING_WEIGHTS = WEIGHTS_DIR / 'MappingNetwork_Ws.pth'
-# CNN_VAE_WEIGHTS = WEIGHTS_DIR / 'Latent2VAE_CNN_Ws.pth'
+WEIGHTS_DIR = BASE_DIR / 'weights'
+WEIGHTS_AE = WEIGHTS_DIR / 'Ws_Best_AE.pth'
+WEIGHTS_CLIP = WEIGHTS_DIR / 'Ws_Best_MLP_Clip.pth'
+WEIGHTS_TXT = WEIGHTS_DIR / 'Ws_Best_MLP_txt.pth'
+WEIGHTS_VAE = WEIGHTS_DIR / 'Ws_Best_CNN_Vae.pth'
+
+MODELS_DIR = BASE_DIR / 'models'
+RESULTS_DIR = BASE_DIR / 'results'
 
 # Device configuration
 if torch.cuda.is_available():

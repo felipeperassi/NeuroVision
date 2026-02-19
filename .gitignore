@@ -1,2 +1,45 @@
+# Python Basics
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Data
 data/
+*.npy
+*.npz
+*.csv
+*.hdf5
+*.h5
+
+# Weights & Models
 weights/
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+*.onnx
+
+# Results & Outputs
+results/
+*.png
+*.jpg
+*.jpeg
+
+# OS Files
+.DS_Store
+Thumbs.db
