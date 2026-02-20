@@ -3,7 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 from diffusers import StableDiffusionImg2ImgPipeline, AutoencoderKL
-from config import DEVICE, DATA_VOXELS, WEIGHTS_CLIP, WEIGHTS_TXT, WEIGHTS_VAE, RESULTS_DIR
+from sklearn.model_selection import test_train_split, train_test_split
+
+from config import DEVICE, SEED, DATA_VOXELS, WEIGHTS_CLIP, WEIGHTS_TXT, WEIGHTS_VAE, RESULTS_DIR
 from models import Voxels2ClipMLP, Clip2TxtMLP, Voxels2VaeCNN
 
 def latents_to_pil(latents, pipe):
@@ -22,22 +24,23 @@ def main():
 
     # Brain Data
     print("Reading brain signal...")
-    x_voxels = np.load(DATA_VOXELS)
-    brain_signal = x_voxels[TEST_IDX]
+    X_voxels = np.load(DATA_VOXELS)
+    _, X_test = train_test_split(X_voxels, test_size=0.1, random_state=SEED) # Idem to training split
+    brain_signal = X_test[TEST_IDX]
     brain_tensor = torch.tensor(brain_signal).float().unsqueeze(0).to(DEVICE)
 
     # Load Models
     print("Loading Neural Networks...")
     
-    mlp_visual = Voxels2ClipMLP(input_dim=x_voxels.shape[1]).to(DEVICE) # MLP: Voxels -> CLIP Embeddings
+    mlp_visual = Voxels2ClipMLP(input_dim=X_test.shape[1]).to(DEVICE) # MLP: Voxels -> CLIP Embeddings
     mlp_visual.load_state_dict(torch.load(WEIGHTS_CLIP, map_location=DEVICE))
     mlp_visual.eval()
     
     translator = Clip2TxtMLP(input_dim=768, seq_len=77).to(DEVICE) # MLP: CLIP Embeddings -> Text Prompt
     translator.load_state_dict(torch.load(WEIGHTS_TXT, map_location=DEVICE))
     translator.eval()
-        
-    cnn_vae = Voxels2VaeCNN(voxel_dim=x_voxels.shape[1]).to(DEVICE) # CNN: Voxels -> VAE Latents
+
+    cnn_vae = Voxels2VaeCNN(voxel_dim=X_test.shape[1]).to(DEVICE) # CNN: Voxels -> VAE Latents
     cnn_vae.load_state_dict(torch.load(WEIGHTS_VAE, map_location=DEVICE))
     cnn_vae.eval()
 
