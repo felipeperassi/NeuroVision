@@ -29,3 +29,6 @@ elif torch.backends.mps.is_available():
 else:
     DEVICE = "cpu"
     print("Hardware detected: CPU")
+
+# Seed
+SEED = 42

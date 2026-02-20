@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 from pathlib import Path
 
-from config import DEVICE, DATA_VOXELS, DATA_VAE, DATA_CLIP, DATA_TXT, WEIGHTS_DIR
+from config import DEVICE, SEED, DATA_VOXELS, DATA_VAE, DATA_CLIP, DATA_TXT, WEIGHTS_DIR
 from models import (
     Voxels2LatDataset, Voxels2LatAutoencoder, # AE
     Voxels2VaeDataset, Voxels2VaeCNN,         # CNN
@@ -36,7 +36,7 @@ CONFIGS = {
     'ae': {
         'print_name': 'Autoencoder',
         'data_in': DATA_VOXELS,
-        'data_out': None, # AE is self-supervised (In=Out)
+        'data_out': None, # AE is self-supervised
         'dataset': Voxels2LatDataset,
         'model': Voxels2LatAutoencoder,
         'loss': nn.MSELoss(),
@@ -93,12 +93,12 @@ def train(mode):
     
     # Self-Supervised vs Supervised Learning
     if cfg['data_out'] is None:
-        X_train, X_test = train_test_split(X, test_size=0.1, random_state=42)
+        X_train, X_test = train_test_split(X, test_size=0.1, random_state=SEED)
         Y_train, Y_test = X_train, X_test
         print(f"Train shape: {X_train.shape} | Test shape: {X_test.shape}")
     else:
         Y = np.load(cfg['data_out'])
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.1, random_state=42)
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.1, random_state=SEED)
         print(f"Train shape: {X_train.shape} | Test shape: {X_test.shape}")
 
     # Create datasets and dataloaders
