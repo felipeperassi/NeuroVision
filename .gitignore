@@ -18,7 +18,7 @@ venv.bak/
 *.swp
 *.swo
 
-# Data
+# Data & Indexes
 data/
 *.npy
 *.npz
@@ -26,7 +26,15 @@ data/
 *.hdf5
 *.h5
 
-# Weights & Models
+idxs/
+*.npy
+*.npz
+*.csv
+*.hdf5
+*.h5
+
+
+# Weights
 weights/
 *.pth
 *.pt
