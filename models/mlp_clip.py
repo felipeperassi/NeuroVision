@@ -1,45 +1,52 @@
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset
 import torch.nn.functional as F
 
-# Dataset
-class Voxels2ClipDataset(Dataset):
-    def __init__(self, input_data, output_data):
-        self.input = torch.tensor(input_data, dtype=torch.float32)
-        raw_output = torch.tensor(output_data, dtype=torch.float32)
-        self.output = F.normalize(raw_output, p=2, dim=-1)
-
-    def __len__(self):
-        return len(self.input)
-
-    def __getitem__(self, idx):
-        return self.input[idx], self.output[idx]
-
-# MLP Model
-class Voxels2ClipMLP(nn.Module):
-    def __init__(self, input_dim=4657, output_dim=768):
+class VoxelToCLIP(nn.Module):
+    """
+    MLP Model to predict CLIP features from voxel data.
+    
+    Input: (trials, 15724) voxel vector.
+    
+    Output: CLIP feature vector, 1024 dimensions.
+    
+    MLP Architecture: Voxels (15724) -> Hidden (4096 -> 2048 -> 1024) -> CLIP (1024)
+    """
+    def __init__(self, input_dim: int, clip_dim: int = 1024) -> None:
+        """
+        Initializes the VoxelToCLIP MLP model.
+            Args:
+                input_dim (int): The dimensionality of the input voxel vector (e.g., 15724).
+                clip_dim (int): The dimensionality of the output CLIP feature vector (default: 1024).
+        """
         super().__init__()
 
-        self.model = nn.Sequential(
+        # MLP: Voxels (15724) -> Hidden (4096 -> 2048 -> 1024) -> CLIP (1024)
+        self.mlp = nn.Sequential(
             nn.Linear(input_dim, 4096),
-            nn.BatchNorm1d(4096),
             nn.GELU(),
-            nn.Dropout(0.4),
+            nn.LayerNorm(4096),
+            nn.Dropout(0.5),    
 
             nn.Linear(4096, 2048),
-            nn.BatchNorm1d(2048),
             nn.GELU(),
-            nn.Dropout(0.3),
+            nn.LayerNorm(2048),
+            nn.Dropout(0.5),
 
             nn.Linear(2048, 1024),
-            nn.BatchNorm1d(1024),
             nn.GELU(),
+            nn.LayerNorm(1024),
             nn.Dropout(0.3),
 
-            nn.Linear(1024, output_dim)
+            nn.Linear(1024, clip_dim),
         )
 
-    def forward(self, x):
-        raw_output = self.model(x)
-        return F.normalize(raw_output, p=2, dim=-1) # L2 Norm for Clip space compatibility
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass of the model.
+            Args:
+                x (torch.Tensor): Input voxel data (trials, 15724).
+            Returns:
+                torch.Tensor: Output normalized CLIP feature vector (trials, 1024).
+        """
+        return F.normalize(self.mlp(x), dim=-1)
