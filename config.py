@@ -4,20 +4,26 @@ import torch
 # Directories & file paths
 BASE_DIR = Path(__file__).resolve().parent
 
-DATA_DIR = BASE_DIR / 'data'
-DATA_CLIP = DATA_DIR / 'Y_clip.npy'
-DATA_TXT = DATA_DIR / 'Y_txt.npy'
-DATA_VAE = DATA_DIR / 'Y_vae.npy'
-DATA_VOXELS = DATA_DIR / 'X_voxs_subj01.npy'
+DIR_DATA    = BASE_DIR / 'data'
+DIR_WEIGHTS = BASE_DIR / 'weights'
+DIR_MODELS  = BASE_DIR / 'models'
+DIR_RESULTS = BASE_DIR / 'results'
+DIR_IDX     = BASE_DIR / 'idx'
 
-WEIGHTS_DIR = BASE_DIR / 'weights'
-WEIGHTS_AE = WEIGHTS_DIR / 'Ws_Best_AE.pth'
-WEIGHTS_CLIP = WEIGHTS_DIR / 'Ws_Best_MLP_Clip.pth'
-WEIGHTS_TXT = WEIGHTS_DIR / 'Ws_Best_MLP_txt.pth'
-WEIGHTS_VAE = WEIGHTS_DIR / 'Ws_Best_CNN_Vae.pth'
+DATA_VOXELS = DIR_DATA / 'X_VOXS.npy'
+DATA_CLIP   = DIR_DATA / 'Y_CLIP.npy'
+DATA_VAE    = DIR_DATA / 'Y_VAE.npy'
+DATA_VGG1   = DIR_DATA / 'Y_VGG1.npy'
+DATA_VGG2   = DIR_DATA / 'Y_VGG2.npy'
+DATA_VGG3   = DIR_DATA / 'Y_VGG3.npy'
 
-MODELS_DIR = BASE_DIR / 'models'
-RESULTS_DIR = BASE_DIR / 'results'
+WEIGHTS_AE      = DIR_WEIGHTS / 'Ws_AE.pth'
+WEIGHTS_CLIP    = DIR_WEIGHTS / 'Ws_MLP_CLIP.pth'
+WEIGHTS_VGG     = DIR_WEIGHTS / 'Ws_MLP_VGG.pth'
+WEIGHTS_VAE     = DIR_WEIGHTS / 'Ws_CNN_VAE.pth'
+
+IDX_TRAIN = DIR_IDX / 'IDX_TRAIN.npy'
+IDX_TEST  = DIR_IDX / 'IDX_TEST.npy'
 
 # Device configuration
 if torch.cuda.is_available():
@@ -30,5 +36,6 @@ else:
     DEVICE = "cpu"
     print("Hardware detected: CPU")
 
-# Seed
+# Seed & image idx
 SEED = 42
+IMG_IDX = 2
