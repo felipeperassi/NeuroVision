@@ -33,7 +33,6 @@ idxs/
 *.hdf5
 *.h5
 
-
 # Weights
 weights/
 *.pth
