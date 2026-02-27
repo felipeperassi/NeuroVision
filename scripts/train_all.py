@@ -1,9 +1,9 @@
 from train import train
 
-def main():
+def train_all():
     print("INITIATING TRAINING FOR ALL MODELS...")
 
-    models = ['ae', 'cnn', 'mlp_clip', 'mlp_txt']
+    models = ['MLP', 'CNN_VAE', 'CNN_VGG']
 
     for model in models:
         print(f"\n\n========================================")
@@ -17,4 +17,4 @@ def main():
     print("\n\nALL MODELS TRAINED SUCCESSFULLY!")
 
 if __name__ == "__main__":
-    main()
+    train_all()
