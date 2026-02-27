@@ -51,7 +51,7 @@ def cos_loss(pred : torch.Tensor, gt : torch.Tensor) -> torch.Tensor:
 # --------- Main training function ---------
 
 # Configuration for each model type
-MODES = {
+MODELS = {
     'MLP' : {
         'model' : VoxelToCLIP,
         'weights': WEIGHTS_CLIP,
@@ -99,8 +99,12 @@ def train(mode : str) -> None:
         Args:
             - mode (str): The model type to train ('MLP', 'CNN_VAE', or 'CNN_VGG').
     """
+    # Check for valid mode and get corresponding configuration
+    if mode not in MODELS:
+        raise ValueError(f"Invalid mode '{mode}'. Choose from: {list(MODELS.keys())}")
+    model = MODELS[mode]
+    
     # Load data
-    model = MODES[mode]
     print(f"Loading data for {model['target_name']}...")
     train_loader, test_loader, mean, std = load_data(
         voxels_path=DATA_VOXELS, t1_path=model['t1'], t2_path=model['t2'], t3_path=model['t3'], 
