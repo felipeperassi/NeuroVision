@@ -1,9 +1,11 @@
-from config import IDX_TEST, IDX_TRAIN, DATA_VOXELS_ST
+from config import IDX_TEST, IDX_TRAIN, DATA_VOXELS_ST, DEVICE
+from models import VoxelToCLIP, VoxelToVGG, VoxelToVAE
 
 import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 import numpy as np
+from diffusers import StableDiffusionImg2ImgPipeline, StableDiffusionControlNetPipeline, AutoencoderKL, ControlNetModel
 
 class VoxelTargetDataset(Dataset):
     def __init__(self, voxels : torch.Tensor, t1 : torch.Tensor, t2 : torch.Tensor = None, t3 : torch.Tensor = None, 
@@ -59,7 +61,7 @@ class VoxelTargetDataset(Dataset):
         else: return x, self.t1[idx], self.t2[idx], self.t3[idx]
 
 
-def load_data(voxels_path : str, t1_path : str, t2_path : str = None, t3_path : str = None, 
+def load_training_data(voxels_path : str, t1_path : str, t2_path : str = None, t3_path : str = None, 
               target_name : str = None, batch_size : int = None) -> tuple[DataLoader, DataLoader, torch.Tensor, torch.Tensor]:
     """
     Loads the voxel and target data, splits it into training and testing sets, and returns DataLoaders for each set.
@@ -103,3 +105,108 @@ def load_data(voxels_path : str, t1_path : str, t2_path : str = None, t3_path : 
     )
 
     return train_loader, test_loader, mean, std
+
+def load_inference_pipeline(cnn_name : str) -> tuple[StableDiffusionImg2ImgPipeline | StableDiffusionControlNetPipeline, AutoencoderKL | ControlNetModel]:
+    """
+    Loads the Stable Diffusion pipeline and corresponding model (VAE or ControlNet) for inference based on the specified CNN name.
+        Args:
+            - cnn_name (str): Name of the CNN model ("VAE" or "VGG") to determine which pipeline and model to load.
+        Returns:
+            - tuple[StableDiffusionImg2ImgPipeline | StableDiffusionControlNetPipeline, AutoencoderKL | ControlNetModel]: The loaded Stable Diffusion pipeline and the corresponding model (VAE or ControlNet).
+    """
+    names = ["VAE", "VGG"]
+    if cnn_name.upper() not in names:
+        raise ValueError(f"Invalid CNN name: {cnn_name}. Must be one of {names}.")
+
+    if cnn_name.upper() == "VAE":
+        vae = AutoencoderKL.from_pretrained(
+            "CompVis/stable-diffusion-v1-4", subfolder="vae"
+        ).to(DEVICE).eval()
+
+        pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
+            "runwayml/stable-diffusion-v1-5",
+            torch_dtype=torch.float16
+        ).to(DEVICE)
+        pipe.safety_checker = None
+        pipe.load_ip_adapter(
+            "h94/IP-Adapter",
+            subfolder="models",
+            weight_name="ip-adapter_sd15.bin"
+        )
+        pipe.set_ip_adapter_scale(1.0)
+
+        return pipe, vae
+    else:
+        controlnet = ControlNetModel.from_pretrained(
+            "lllyasviel/sd-controlnet-depth",
+            torch_dtype=torch.float16
+        ).to(DEVICE)
+
+        pipe = StableDiffusionControlNetPipeline.from_pretrained(
+            "runwayml/stable-diffusion-v1-5",
+            controlnet=controlnet,
+            torch_dtype=torch.float16
+        ).to(DEVICE)
+        pipe.safety_checker = None
+        pipe.load_ip_adapter(
+            "h94/IP-Adapter",
+            subfolder="models",
+            weight_name="ip-adapter_sd15.bin"
+        )
+        pipe.set_ip_adapter_scale(1.0)
+
+        return pipe, controlnet
+
+
+def load_inference_data(voxels_path : str, mlp_path : str, cnn_path : str, cnn_name : str, 
+                            voxels_st_path : str, idx_test_path : str, 
+                            idx_image : int) -> tuple[StableDiffusionImg2ImgPipeline | StableDiffusionControlNetPipeline, AutoencoderKL | ControlNetModel, torch.Tensor, VoxelToCLIP, VoxelToVAE | VoxelToVGG]:
+    """
+    Loads the necessary data and models for performing inference on a single trial based on the specified CNN name.
+        Args:
+            - voxels_path (str): Path to the voxel data .npy file.
+            - mlp_path (str): Path to the saved MLP model weights .pt file.
+            - cnn_path (str): Path to the saved CNN model weights .pt file.
+            - cnn_name (str): Name of the CNN model ("VAE" or "VGG") to determine which pipeline and model to load.
+            - voxels_st_path (str): Path to the voxel statistics .npz file.
+            - idx_test_path (str): Path to the test indices .npy file.
+            - idx_image (int): Index of the image in the test set to process.
+        Returns:
+            - tuple[StableDiffusionImg2ImgPipeline | StableDiffusionControlNetPipeline, AutoencoderKL | ControlNetModel, 
+            torch.Tensor, VoxelToCLIP, VoxelToVAE | VoxelToVGG]: The loaded Stable Diffusion pipeline, corresponding model (VAE or ControlNet), 
+            normalized voxel tensor for the specified trial, loaded MLP model, and loaded CNN model.
+        """
+    names = ["VAE", "VGG"]
+    if cnn_name.upper() not in names:
+        raise ValueError(f"Invalid CNN name: {cnn_name}. Must be one of {names}.")
+    
+    # Load pipeline and models for inference
+    pipe, model = load_inference_pipeline(cnn_name)
+
+    # Process voxel data
+    voxels = torch.tensor(np.load(voxels_path), dtype=torch.float32)
+    voxels_st = np.load(voxels_st_path)
+    mean, std = torch.tensor(voxels_st['mean'], dtype=torch.float32), torch.tensor(voxels_st['std'], dtype=torch.float32)
+    voxels_norm = (voxels - mean) / std
+
+    # Idx for inference
+    idx_test = np.load(idx_test_path)
+    idx = idx_test[idx_image]
+    voxel_idx = voxels_norm[idx].unsqueeze(0) 
+   
+   # Load MLP
+    mlp_weights = torch.load(mlp_path, map_location=DEVICE)
+    mlp = VoxelToCLIP(input_dim=mlp_weights['input_dim']).to(DEVICE)
+    mlp.load_state_dict(mlp_weights['model_state_dict'])
+    mlp.eval()
+
+    # Load CNN
+    cnn_weights = torch.load(cnn_path, map_location=DEVICE)
+    if cnn_name.upper() == "VAE":
+        cnn = VoxelToVAE(input_dim=cnn_weights['voxel_dim']).to(DEVICE)
+    else:
+        cnn = VoxelToVGG(input_dim=cnn_weights['voxel_dim']).to(DEVICE)
+    cnn.load_state_dict(cnn_weights['model_state_dict'])
+    cnn.eval()
+    
+    return pipe, model, voxel_idx, mlp, cnn

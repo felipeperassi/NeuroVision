@@ -2,7 +2,7 @@ from config import (
     DATA_VOXELS, DATA_CLIP, DATA_VAE, DATA_VGG1, DATA_VGG2, DATA_VGG3, 
     WEIGHTS_CLIP, WEIGHTS_VAE, WEIGHTS_VGG, DEVICE, PATIENCE, EPOCHS
 )
-from load_data import load_data
+from load_data import load_training_data
 from models import (
     VoxelToCLIP,    # MLP for CLIP features
     VoxelToVGG,     # CNN for VGG features
@@ -106,7 +106,7 @@ def train(mode : str) -> None:
     
     # Load data
     print(f"Loading data for {model['target_name']}...")
-    train_loader, test_loader, mean, std = load_data(
+    train_loader, test_loader, mean, std = load_training_data(
         voxels_path=DATA_VOXELS, t1_path=model['t1'], t2_path=model['t2'], t3_path=model['t3'], 
         target_name=model['target_name'], batch_size=model['batch_size']
     )
