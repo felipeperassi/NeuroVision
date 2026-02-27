@@ -17,6 +17,7 @@ DATA_VGG1       = DIR_DATA / 'Y_VGG1.npy'
 DATA_VGG2       = DIR_DATA / 'Y_VGG2.npy'
 DATA_VGG3       = DIR_DATA / 'Y_VGG3.npy'
 DATA_VOXELS_ST   = DIR_DATA / 'STATS.npy'
+DATA_IMAGES      = DIR_DATA / 'IMAGES.npy'
 
 WEIGHTS_AE      = DIR_WEIGHTS / 'Ws_AE.npy'
 WEIGHTS_CLIP    = DIR_WEIGHTS / 'Ws_MLP_CLIP.npy'
