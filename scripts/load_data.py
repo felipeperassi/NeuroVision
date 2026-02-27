@@ -14,7 +14,7 @@ class VoxelTargetDataset(Dataset):
         """
         Initializes the VoxelTargetDataset.
             Args:
-                - voxels (torch.Tensor): Voxel data tensor of shape (trials, voxel_dim).
+                - voxels (torch.Tensor): Voxel data tensor of shape (trials, input_dim).
                 - t1 (torch.Tensor): Target tensor 1 (e.g., CLIP, VAE, or VGG features).
                 - t2 (torch.Tensor, optional): Target tensor 2 (e.g., VGG features). Required if target_name is "VGG".
                 - t3 (torch.Tensor, optional): Target tensor 3 (e.g., VGG features). Required if target_name is "VGG".
@@ -184,9 +184,9 @@ def load_inference_data(voxels_path : str, mlp_path : str, cnn_path : str, cnn_n
     pipe, model = load_inference_pipeline(cnn_name)
 
     # Process voxel data
-    voxels = torch.tensor(np.load(voxels_path), dtype=torch.float32)
+    voxels = torch.tensor(np.load(voxels_path), dtype=torch.float32).to(DEVICE)
     voxels_st = np.load(voxels_st_path)
-    mean, std = torch.tensor(voxels_st['mean'], dtype=torch.float32), torch.tensor(voxels_st['std'], dtype=torch.float32)
+    mean, std = torch.tensor(voxels_st['mean'], dtype=torch.float32).to(DEVICE), torch.tensor(voxels_st['std'], dtype=torch.float32).to(DEVICE)
     voxels_norm = (voxels - mean) / std
 
     # Idx for inference
@@ -197,16 +197,16 @@ def load_inference_data(voxels_path : str, mlp_path : str, cnn_path : str, cnn_n
    # Load MLP
     mlp_weights = torch.load(mlp_path, map_location=DEVICE)
     mlp = VoxelToCLIP(input_dim=mlp_weights['input_dim']).to(DEVICE)
-    mlp.load_state_dict(mlp_weights['model_state_dict'])
+    mlp.load_state_dict(mlp_weights['model_state'])
     mlp.eval()
 
     # Load CNN
     cnn_weights = torch.load(cnn_path, map_location=DEVICE)
     if cnn_name.upper() == "VAE":
-        cnn = VoxelToVAE(input_dim=cnn_weights['voxel_dim']).to(DEVICE)
+        cnn = VoxelToVAE(input_dim=cnn_weights['input_dim']).to(DEVICE)
     else:
-        cnn = VoxelToVGG(input_dim=cnn_weights['voxel_dim']).to(DEVICE)
-    cnn.load_state_dict(cnn_weights['model_state_dict'])
+        cnn = VoxelToVGG(input_dim=cnn_weights['input_dim']).to(DEVICE)
+    cnn.load_state_dict(cnn_weights['model_state'])
     cnn.eval()
     
     return pipe, model, voxel_idx, mlp, cnn

@@ -1,6 +1,6 @@
 from config import (
     DATA_VOXELS, DATA_VOXELS_ST, IDX_TEST, 
-    WEIGHTS_CLIP, WEIGHTS_VAE, WEIGHTS_VGG
+    WEIGHTS_CLIP, WEIGHTS_VAE, WEIGHTS_VGG, DIR_RESULTS
 )
 from load_data import load_inference_data
 
@@ -79,7 +79,7 @@ def inference(cnn_name : str, idx_image : int) -> Image.Image:
     pos_embeds   = clip_pred.unsqueeze(0)
     image_embeds = torch.cat([neg_embeds, pos_embeds], dim=0).unsqueeze(1).half()
 
-    structured_img = process_inference(pipe, model, cnn_name, voxel_idx, cnn)
+    structured_img = process_inference(model, cnn_name, voxel_idx, cnn)
 
     if cnn_name.upper() == "VAE":
         output = pipe(
@@ -114,4 +114,5 @@ if __name__ == "__main__":
                         choices=range(3000))
     
     args = parser.parse_args()
-    inference(cnn_name=args.cnn, idx_image=int(args.idx))
+    output = inference(cnn_name=args.cnn, idx_image=int(args.idx))
+    output.save(f"{DIR_RESULTS}/{args.cnn}_{args.idx}.png")
