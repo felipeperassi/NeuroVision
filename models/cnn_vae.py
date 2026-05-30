@@ -5,7 +5,7 @@ class VoxelToVAE(nn.Module):
     """
     CNN Model to predict VAE features from voxel data.
     
-    Input: (trials, 15724) voxel vector.
+    Input: (trials, 4657) voxel vector.
 
     Output: Structural features, 4 channels (64x64)
 
@@ -19,11 +19,11 @@ class VoxelToVAE(nn.Module):
         """
         Initializes the VoxelToVAE model.
             Args:
-                input_dim (int): The dimensionality of the input voxel vector (e.g., 15724).
+                input_dim (int): The dimensionality of the input voxel vector (e.g., 4657).
         """
         super().__init__()
 
-        # Voxels 15724 -> 256 (8×8)
+        # Voxels 4657 -> 256 (8×8)
         self.fc = nn.Sequential(
             nn.Linear(input_dim, 4096),
             nn.GELU(),
@@ -68,7 +68,7 @@ class VoxelToVAE(nn.Module):
         """
         Forward pass of the model.
             Args:
-                x (torch.Tensor): Input voxel data (trials, 15724).
+                x (torch.Tensor): Input voxel data (trials, 4657).
             Returns:
                 torch.Tensor: Output feature maps (trials, 4, 64, 64).
         """

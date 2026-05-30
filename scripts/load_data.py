@@ -10,7 +10,8 @@ from diffusers import StableDiffusionImg2ImgPipeline, StableDiffusionControlNetP
 class VoxelTargetDataset(Dataset):
     def __init__(self, voxels : torch.Tensor, t1 : torch.Tensor, t2 : torch.Tensor = None, t3 : torch.Tensor = None, 
                  target_name : str = None, indices : np.ndarray = None, 
-                 mean : torch.Tensor = None, std : torch.Tensor = None) -> None:
+                 mean_vox : torch.Tensor = None, std_vox : torch.Tensor = None,
+                 mean_target : torch.Tensor = None, std_target : torch.Tensor = None) -> None:
         """
         Initializes the VoxelTargetDataset.
             Args:
@@ -20,8 +21,10 @@ class VoxelTargetDataset(Dataset):
                 - t3 (torch.Tensor, optional): Target tensor 3 (e.g., VGG features). Required if target_name is "VGG".
                 - target_name (str): Name of the target type ("CLIP", "VAE", or "VGG").
                 - indices (np.ndarray): Array of trial indices to include in the dataset.
-                - mean (torch.Tensor): Mean voxel values for normalization.
-                - std (torch.Tensor): Standard deviation of voxel values for normalization.
+                - mean_vox (torch.Tensor): Mean voxel values for normalization.
+                - std_vox (torch.Tensor): Standard deviation of voxel values for normalization.
+                - mean_target (torch.Tensor): Mean target values for normalization.
+                - std_target (torch.Tensor): Standard deviation of target values for normalization.
         """
         self.name = target_name.upper() if target_name else None
         names = ["CLIP", "VAE", "VGG"]
@@ -36,9 +39,11 @@ class VoxelTargetDataset(Dataset):
             self.t2     = t2
             self.t3     = t3 
 
-        self.indices = indices
-        self.mean    = mean
-        self.std     = std
+        self.indices     = indices
+        self.mean_vox    = mean_vox
+        self.std_vox     = std_vox
+        self.mean_target = mean_target
+        self.std_target  = std_target
 
     def __len__(self) -> int:
         """
@@ -62,7 +67,7 @@ class VoxelTargetDataset(Dataset):
 
 
 def load_training_data(voxels_path : str, t1_path : str, t2_path : str = None, t3_path : str = None, 
-              target_name : str = None, batch_size : int = None) -> tuple[DataLoader, DataLoader, torch.Tensor, torch.Tensor]:
+              target_name : str = None, batch_size : int = None, target_st : str = None) -> tuple[DataLoader, DataLoader, torch.Tensor, torch.Tensor]:
     """
     Loads the voxel and target data, splits it into training and testing sets, and returns DataLoaders for each set.
         Args:
@@ -72,6 +77,7 @@ def load_training_data(voxels_path : str, t1_path : str, t2_path : str = None, t
             - t3_path (str, optional): Path to the target tensor 3 .npy file (e.g., VGG features). Required if target_name is "VGG".
             - target_name (str): Name of the target type ("CLIP", "VAE", or "VGG").
             - batch_size (int): Batch size for the DataLoaders.
+            - target_st (str, optional): Path to the target statistics .npz file for normalization. Required if target_name is "VAE" or "VGG".
         Returns:
             - tuple[DataLoader, DataLoader, torch.Tensor, torch.Tensor]: Training DataLoader, Testing DataLoader, Mean tensor, Std tensor.
     """

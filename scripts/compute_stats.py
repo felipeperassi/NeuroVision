@@ -1,4 +1,7 @@
-from config import DATA_VOXELS_ST, DATA_VOXELS, IDX_TRAIN
+from config import (
+    DATA_VOXELS_ST, DATA_VAE_ST, DATA_VGG_ST, 
+    DATA_VOXELS, DATA_VAE, DATA_VGG1, IDX_TRAIN
+)
 import numpy as np
 
 def compute_stats(data_path : str, idx_img_path : str) -> tuple[np.ndarray, np.ndarray]:
@@ -34,3 +37,13 @@ if __name__ == "__main__":
     mean, std = compute_stats(DATA_VOXELS, IDX_TRAIN)
     save_stats(mean, std, DATA_VOXELS_ST)
     print(f"Voxel stats computed and saved to {DATA_VOXELS_ST}.")
+
+    print(f"Computing VAE statistics from {DATA_VAE} using training indices from {IDX_TRAIN}...")
+    mean, std = compute_stats(DATA_VAE, IDX_TRAIN)
+    save_stats(mean, std, DATA_VAE_ST)
+    print(f"VAE stats computed and saved to {DATA_VAE_ST}.")
+
+    print(f"Computing VGG statistics from {DATA_VGG1} using training indices from {IDX_TRAIN}...")
+    mean, std = compute_stats(DATA_VGG1, IDX_TRAIN) 
+    save_stats(mean, std, DATA_VGG_ST)
+    print(f"VGG stats computed and saved to {DATA_VGG_ST}.")

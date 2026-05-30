@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 from diffusers import StableDiffusionImg2ImgPipeline, AutoencoderKL
-from sklearn.model_selection import test_train_split, train_test_split
+from sklearn.model_selection import train_test_split
 
 from config import DEVICE, SEED, DATA_VOXELS, WEIGHTS_CLIP, WEIGHTS_TXT, WEIGHTS_VAE, RESULTS_DIR
 from models import Voxels2ClipMLP, Clip2TxtMLP, Voxels2VaeCNN

@@ -5,7 +5,7 @@ class VoxelToVGG(nn.Module):
     """
     CNN Model to predict VGG features from voxel data.
     
-    Input: (trials, 15724) voxel vector.
+    Input: (trials, 4657) voxel vector.
 
     Output: Tuple of 3 feature maps corresponding to VGG layers:
     - H1: Low level features, 64 channels (14x14).
@@ -25,11 +25,11 @@ class VoxelToVGG(nn.Module):
         """
         Initializes the VoxelToVGG model.
             Args:
-                input_dim (int): The dimensionality of the input voxel vector (e.g., 15724).
+                input_dim (int): The dimensionality of the input voxel vector (e.g., 4657).
         """
         super().__init__()
 
-        # Voxels 15724 -> 512 (2x2)
+        # Voxels 4657 -> 512 (2x2)
         self.fc = nn.Sequential(
             nn.Linear(input_dim, 4096),
             nn.GELU(),
@@ -79,7 +79,7 @@ class VoxelToVGG(nn.Module):
         """
         Forward pass of the model.
             Args:
-                x (torch.Tensor): Input voxel data (trials, 15724).
+                x (torch.Tensor): Input voxel data (trials, 4657).
             Returns:
                 Tuple[torch.Tensor, torch.Tensor, torch.Tensor]: 
                     - H1: 64 channels (14x14).
