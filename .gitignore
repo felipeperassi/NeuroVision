@@ -41,12 +41,6 @@ weights/
 *.safetensors
 *.onnx
 
-# Results & Outputs
-results/
-*.png
-*.jpg
-*.jpeg
-
 # OS Files
 .DS_Store
 Thumbs.db
