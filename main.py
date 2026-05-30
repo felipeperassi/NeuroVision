@@ -5,8 +5,8 @@ from PIL import Image
 from diffusers import StableDiffusionImg2ImgPipeline, AutoencoderKL
 from sklearn.model_selection import train_test_split
 
-from config import DEVICE, SEED, DATA_VOXELS, WEIGHTS_CLIP, WEIGHTS_TXT, WEIGHTS_VAE, RESULTS_DIR
-from models import Voxels2ClipMLP, Clip2TxtMLP, Voxels2VaeCNN
+from config import DEVICE, SEED, DATA_VOXELS, WEIGHTS_CLIP, WEIGHTS_VAE, RESULTS_DIR
+from models import VoxelToCLIP, VoxelToVAE, VoxelToVGG
 
 def latents_to_pil(latents, pipe):
     latents = latents / 0.18215
@@ -32,15 +32,11 @@ def main():
     # Load Models
     print("Loading Neural Networks...")
     
-    mlp_visual = Voxels2ClipMLP(input_dim=X_test.shape[1]).to(DEVICE) # MLP: Voxels -> CLIP Embeddings
+    mlp_visual = VoxelToCLIP(input_dim=X_test.shape[1]).to(DEVICE) # MLP: Voxels -> CLIP Embeddings
     mlp_visual.load_state_dict(torch.load(WEIGHTS_CLIP, map_location=DEVICE))
     mlp_visual.eval()
-    
-    translator = Clip2TxtMLP(input_dim=768, seq_len=77).to(DEVICE) # MLP: CLIP Embeddings -> Text Prompt
-    translator.load_state_dict(torch.load(WEIGHTS_TXT, map_location=DEVICE))
-    translator.eval()
 
-    cnn_vae = Voxels2VaeCNN(voxel_dim=X_test.shape[1]).to(DEVICE) # CNN: Voxels -> VAE Latents
+    cnn_vae = VoxelToVAE(input_dim=X_test.shape[1]).to(DEVICE) # CNN: Voxels -> VAE Latents
     cnn_vae.load_state_dict(torch.load(WEIGHTS_VAE, map_location=DEVICE))
     cnn_vae.eval()
 
@@ -58,9 +54,6 @@ def main():
         # Voxels -> CLIP Embeddings
         visual_embed = mlp_visual(brain_tensor)
         
-        # CLIP Embeddings -> Text Prompt
-        text_embeds = translator(visual_embed)
-        
         # Voxels -> VAE Latents -> PIL Image
         initial_latents = cnn_vae(brain_tensor)
         structure_pil = latents_to_pil(initial_latents, pipe)
@@ -69,7 +62,7 @@ def main():
     # Generate Final Image
     print("Generating final image...")
     generated_image = pipe(
-        prompt_embeds=text_embeds,       # Context from MLPs
+        prompt_embeds=visual_embed,       # Context from MLP
         image=structure_pil,             # Structure from CNN
         strength=0.75,                  
         guidance_scale=7.5,
