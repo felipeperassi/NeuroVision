@@ -8,7 +8,7 @@ DIR_DATA    = BASE_DIR / 'data'
 DIR_WEIGHTS = BASE_DIR / 'weights'
 DIR_MODELS  = BASE_DIR / 'models'
 DIR_RESULTS = BASE_DIR / 'results'
-DIR_IDX     = BASE_DIR / 'idxs'
+DIR_IDX     = BASE_DIR / 'data' / 'idxs'
 
 DATA_VOXELS     = DIR_DATA / 'X_VOXS.npy'
 DATA_CLIP       = DIR_DATA / 'Y_CLIP.npy'
@@ -33,13 +33,11 @@ IDX_IMGS = DIR_IDX / 'IDX_IMGS.npy'
 # Device configuration
 if torch.cuda.is_available():
     DEVICE = "cuda"
-    print(f"Hardware detected: GPU")
 elif torch.backends.mps.is_available():
     DEVICE = "mps"
-    print("Hardware detected: Apple Silicon")
 else:
     DEVICE = "cpu"
-    print("Hardware detected: CPU")
+print(f"Hardware detected: {DEVICE}")
 
 # Seed & image idx
 SEED = 42
