@@ -49,7 +49,8 @@ NeuroVision/
 │  └─ visualize.py        # Qualitative results and reconstructions
 │
 ├─ config.py              # Hyperparameters and path configuration
-├─ main.py                # Run program
+├─ main.py                # Run inference
+├─ NeuroVision.pdf        # Full project report in Spanish
 ├─ .gitignore
 └─ LICENSE
 ```
